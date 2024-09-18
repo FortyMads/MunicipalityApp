@@ -54,7 +54,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 Contact
 For any questions or issues, please contact fortunemadoda2001@gmail.com.
 
-css
-Copy code
 
-Feel free to customize the content, especially the contact information 
