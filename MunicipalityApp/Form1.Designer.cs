@@ -61,7 +61,7 @@
             // 
             // btnFeedback
             // 
-            this.btnFeedback.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.btnFeedback.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.btnFeedback.Location = new System.Drawing.Point(0, 396);
             this.btnFeedback.Name = "btnFeedback";
@@ -75,7 +75,6 @@
             // 
             this.btnServiceRequestStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnServiceRequestStatus.Enabled = false;
             this.btnServiceRequestStatus.Location = new System.Drawing.Point(0, 251);
             this.btnServiceRequestStatus.Name = "btnServiceRequestStatus";
             this.btnServiceRequestStatus.Size = new System.Drawing.Size(149, 47);
@@ -88,7 +87,6 @@
             // 
             this.btnLocalEvents.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnLocalEvents.Enabled = false;
             this.btnLocalEvents.Location = new System.Drawing.Point(0, 174);
             this.btnLocalEvents.Name = "btnLocalEvents";
             this.btnLocalEvents.Size = new System.Drawing.Size(149, 47);

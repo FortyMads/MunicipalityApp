@@ -1,164 +1,79 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Drawing;
+using System.IO;
+using System.Net;
+using System.Net.Http;
 using System.Windows.Forms;
+using Newtonsoft.Json;
+using AxWMPLib;
+
 
 namespace MunicipalityApp
-
 {
-    //
-    //............................................<<< Start Of Class >>>............................................................//
-    // Class to represent the form for reporting issues
-    //
     public partial class ReportIssuesForm : Form
     {
         // List to store reported issues
         private List<ReportedIssue> reportedIssues = new List<ReportedIssue>();
 
-        // File path of the attached media
-        private string attachedFilePath = string.Empty;
+        // List to store attached media (file name + content)
+        private List<MediaFile> attachedMedia = new List<MediaFile>();
 
-        // Placeholder text constants
+        private Timer _typingTimer;
+
         private const string LocationPlaceholder = "Enter the location of the issue";
         private const string DescriptionPlaceholder = "Enter a description of the issue";
-
-        // Reference to the main form for easy navigation
         private Form1 mainForm;
 
-        // Constructor
         public ReportIssuesForm(Form1 form1)
         {
             InitializeComponent();
             mainForm = form1;
 
-            // Set placeholders for input controls
             SetPlaceholderText(txtLocation, LocationPlaceholder);
             SetPlaceholderText(rtbDescription, DescriptionPlaceholder);
 
-            // Add placeholder to ComboBox (Category)
             cmbCategory.Items.Insert(0, "Please Select One");
-            cmbCategory.SelectedIndex = 0;  // Set the placeholder as the default
+            cmbCategory.SelectedIndex = 0;
 
-            // Attach events for handling placeholder text
             txtLocation.Enter += (s, e) => ClearPlaceholderText(txtLocation, LocationPlaceholder);
             txtLocation.Leave += (s, e) => SetPlaceholderText(txtLocation, LocationPlaceholder);
             rtbDescription.Enter += (s, e) => ClearPlaceholderText(rtbDescription, DescriptionPlaceholder);
             rtbDescription.Leave += (s, e) => SetPlaceholderText(rtbDescription, DescriptionPlaceholder);
 
-            // Attach event handlers for updating progress
             txtLocation.TextChanged += TxtLocation_TextChanged;
             cmbCategory.SelectedIndexChanged += CmbCategory_SelectedIndexChanged;
             rtbDescription.TextChanged += RtbDescription_TextChanged;
+            listBoxSuggestions.SelectedIndexChanged += listBoxSuggestions_SelectedIndexChanged;
         }
 
-        //
-        // Set placeholder text for a TextBox or RichTextBox
-        //
-        private void SetPlaceholderText(Control control, string placeholderText)
-        {
-            if (string.IsNullOrWhiteSpace(control.Text))
-            {
-                control.Text = placeholderText;
-                control.ForeColor = Color.Gray; // Set a different color for the placeholder text
-            }
-        }
-
-        //
-        // Clear placeholder text when the user focuses on the control
-        //
-        private void ClearPlaceholderText(Control control, string placeholderText)
-        {
-            if (control.Text == placeholderText)
-            {
-                control.Text = string.Empty;
-                control.ForeColor = SystemColors.WindowText; // Reset to default text color
-            }
-        }
-
-        //
-        // Update the ProgressBar and label when location is filled
-        //
-        private void TxtLocation_TextChanged(object sender, EventArgs e)
-        {
-            if (!string.IsNullOrWhiteSpace(txtLocation.Text))
-            {
-                lblEngagementMessage.Text = "Great! Now select the category.";
-                UpdateProgressBar(); // Step 1 complete
-            }
-        }
-
-        //
-        // Update the ProgressBar and label when a category is selected
-        //
-        private void CmbCategory_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (cmbCategory.SelectedItem != null)
-            {
-                lblEngagementMessage.Text = "Nice choice! Describe the issue.";
-                UpdateProgressBar(); // Step 2 complete
-            }
-        }
-
-
-        //
-        // Update the ProgressBar and label when description is filled
-        //
-        private void RtbDescription_TextChanged(object sender, EventArgs e)
-        {
-            if (!string.IsNullOrWhiteSpace(rtbDescription.Text))
-            {
-                lblEngagementMessage.Text = "Almost done! Attach any media if needed.";
-                UpdateProgressBar(); // Step 3 complete
-            }
-        }
-
-        //
-        // Update ProgressBar value
-        //
-        private void UpdateProgressBar()
-        {
-            int progress = 0;
-
-            // Increment progress only if the real input is present (not placeholders)
-            if (!string.IsNullOrWhiteSpace(txtLocation.Text) && txtLocation.Text != LocationPlaceholder)
-            {
-                progress += 1;
-            }
-
-            if (cmbCategory.SelectedItem != null && cmbCategory.SelectedIndex != 0)
-            {
-                progress += 1;
-            }
-
-            if (!string.IsNullOrWhiteSpace(rtbDescription.Text) && rtbDescription.Text != DescriptionPlaceholder)
-            {
-                progress += 1;
-            }
-
-            if (!string.IsNullOrEmpty(attachedFilePath))
-            {
-                progress += 1;
-            }
-
-            // Set the progress bar value based on the progress
-            progressBarReport.Value = progress;
-        }
-
-
-        //
-        // Method to attach media
-        //
         private void btnAttachMedia_Click(object sender, EventArgs e)
         {
             try
             {
                 using (OpenFileDialog openFileDialog = new OpenFileDialog())
                 {
-                    openFileDialog.Filter = "Image Files (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg|All Files (*.*)|*.*";
+                    openFileDialog.Filter =
+                        "All Files|*.png;*.jpg;*.jpeg;*.pdf;*.doc;*.docx;*.mp4;*.avi;*.mov|" +
+                        "Image Files|*.png;*.jpg;*.jpeg|" +
+                        "Video Files|*.mp4;*.avi;*.mov|" +
+                        "Document Files|*.pdf;*.doc;*.docx";
+                    openFileDialog.Multiselect = true;  // Enable multiple selection
+
                     if (openFileDialog.ShowDialog() == DialogResult.OK)
                     {
-                        attachedFilePath = openFileDialog.FileName;
-                        MessageBox.Show("Attached: " + openFileDialog.FileName);
+                        foreach (var filePath in openFileDialog.FileNames)
+                        {
+                            // Read the content of each file into a byte array
+                            byte[] fileContent = File.ReadAllBytes(filePath);
+                            string fileName = Path.GetFileName(filePath);
+
+                            // Store the media file in the attached media list
+                            attachedMedia.Add(new MediaFile(fileName, fileContent));
+                        }
+
+                        MessageBox.Show($"Attached {openFileDialog.FileNames.Length} file(s).");
                         lblEngagementMessage.Text = "Great! Now click Submit to report the issue.";
                         UpdateProgressBar();
                     }
@@ -166,125 +81,324 @@ namespace MunicipalityApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show("An error occurred while attaching media: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("An error occurred while attaching media: " + ex.Message,
+                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        //
-        // Method to submit the issue
-        //
         private void btnSubmit_Click(object sender, EventArgs e)
         {
             try
             {
-                // Call the ValidateInputs method
-                if (!ValidateInputs())
-                {
-                    return; // Exit if validation fails
-                }
+                if (!ValidateInputs()) return;
 
-                // Create a new ReportedIssue object
-                ReportedIssue newIssue = new ReportedIssue(
+                var newIssue = new ReportedIssue(
                     txtLocation.Text,
                     cmbCategory.SelectedItem.ToString(),
                     rtbDescription.Text,
-                    attachedFilePath
+                    new List<MediaFile>(attachedMedia)  // Copy the media list
                 );
 
-                // Save the reported issue to the list
                 reportedIssues.Add(newIssue);
+                MessageBox.Show("Issue submitted successfully!", "Success",
+                                MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                MessageBox.Show("Issue submitted successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                // Clear input fields after submission
                 ClearForm();
-
-                // Reset the progress bar
-                progressBarReport.Value = 0;
-                lblEngagementMessage.Text = "Start by filling in the location.";
-
             }
             catch (Exception ex)
             {
-                MessageBox.Show("An error occurred while submitting the issue: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("An error occurred while submitting the issue: " + ex.Message,
+                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        //
-        // Method to clear the form
-        //
         private void ClearForm()
         {
             txtLocation.Clear();
             cmbCategory.SelectedIndex = 0;
             rtbDescription.Clear();
-            attachedFilePath = string.Empty;
+            attachedMedia.Clear();  // Clear attached media
             progressBarReport.Value = 0;
             lblEngagementMessage.Text = "Start by filling in the location.";
 
-            // Reapply placeholder text after clearing
             SetPlaceholderText(txtLocation, LocationPlaceholder);
             SetPlaceholderText(rtbDescription, DescriptionPlaceholder);
         }
 
-        //
-        // Button handling for going back to home
-        //
-        private void btnBackToHome_Click(object sender, EventArgs e)
+        private void UpdateProgressBar()
         {
-            try
-            {
-                mainForm.Show(); // Show the main form
-                this.Hide(); // Hide the report issues form
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("An error occurred while going back to home: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            int progress = 0;
+
+            if (!string.IsNullOrWhiteSpace(txtLocation.Text) &&
+                txtLocation.Text != LocationPlaceholder) progress++;
+
+            if (cmbCategory.SelectedIndex != 0) progress++;
+
+            if (!string.IsNullOrWhiteSpace(rtbDescription.Text) &&
+                rtbDescription.Text != DescriptionPlaceholder) progress++;
+
+            if (attachedMedia.Count > 0) progress++;
+
+            progressBarReport.Value = progress;
         }
 
-        //
-        // Method to validate the input fields
-        //
         private bool ValidateInputs()
         {
-            try
+            if (string.IsNullOrWhiteSpace(txtLocation.Text) ||
+                txtLocation.Text == LocationPlaceholder)
             {
-                if (string.IsNullOrWhiteSpace(txtLocation.Text) || txtLocation.Text== "Enter the location of the issue")
-                {
-                    DisplayErrorMessage("Please enter the location of the issue.");
-                    return false;
-                }
-
-                if (cmbCategory.SelectedItem == null || cmbCategory.SelectedIndex == 0)
-                {
-                    DisplayErrorMessage("Please select a category for the issue.");
-                    return false;
-                }
-
-                if (string.IsNullOrWhiteSpace(rtbDescription.Text) || rtbDescription.Text== "Enter a description of the issue")
-                {
-                    DisplayErrorMessage("Please provide a description of the issue.");
-                    return false;
-                }
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("An error occurred while validating inputs: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                DisplayErrorMessage("Please enter the location of the issue.");
                 return false;
             }
+
+            if (cmbCategory.SelectedIndex == 0)
+            {
+                DisplayErrorMessage("Please select a category.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(rtbDescription.Text) ||
+                rtbDescription.Text == DescriptionPlaceholder)
+            {
+                DisplayErrorMessage("Please provide a description.");
+                return false;
+            }
+
+            return true;
         }
 
-        //
-        // Display error message
-        //
         private void DisplayErrorMessage(string message)
         {
-            MessageBox.Show(message, "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(message, "Validation Error",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
- 
+        private void TxtLocation_TextChanged(object sender, EventArgs e)
+        {
+            // Dispose of the previous timer if it exists
+            if (_typingTimer != null)
+            {
+                _typingTimer.Stop();
+                _typingTimer.Dispose();
+            }
+
+            // Create a new timer with a delay of 500ms
+            _typingTimer = new Timer();
+            _typingTimer.Interval = 500;
+            _typingTimer.Tick += (s, args) =>
+            {
+                // Call the API with the current text
+                if (!string.IsNullOrWhiteSpace(txtLocation.Text))
+                {
+                    GetLocationFromAPI(txtLocation.Text);
+                    listBoxSuggestions.Visible = true; // Show the listBoxSuggestions
+                }
+                else
+                {
+                    listBoxSuggestions.Visible = false; // Hide the listBoxSuggestions
+                }
+                _typingTimer.Stop();
+            };
+            _typingTimer.Start();
+            UpdateProgressBar();
+        }
+
+        private void CmbCategory_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbCategory.SelectedIndex != 0)
+            {
+                lblEngagementMessage.Text = "Nice choice! Describe the issue.";
+                UpdateProgressBar();
+            }
+        }
+
+        private void RtbDescription_TextChanged(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(rtbDescription.Text))
+            {
+                lblEngagementMessage.Text = "Almost done! Attach any media if needed.";
+                UpdateProgressBar();
+            }
+        }
+
+
+        private async void GetLocationFromAPI(string location)
+        {
+            // Set up the API endpoint URL
+            string apiKey = "AIzaSyCynzr3DvnVLdC58BWeJudGWDa-dMbslBo";
+            string url = $"https://maps.googleapis.com/maps/api/place/autocomplete/json?input={location}&key={apiKey}";
+
+            // Send a GET request to the API endpoint
+            using (HttpClient client = new HttpClient())
+            {
+                HttpResponseMessage response = await client.GetAsync(url);
+
+                // Check if the response was successful
+                if (response.IsSuccessStatusCode)
+                {
+                    // Parse the response JSON
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    dynamic jsonData = JsonConvert.DeserializeObject(responseBody);
+
+                    // Clear the ListBox before adding new predictions
+                    listBoxSuggestions.Items.Clear();
+
+                    // Process the API response
+                    foreach (var prediction in jsonData.predictions)
+                    {
+                        // Add the prediction to the ListBox
+                        listBoxSuggestions.Items.Add(prediction.description);
+                    }
+                }
+                else
+                {
+                    // Handle API errors
+                    MessageBox.Show("Error calling API: " + response.StatusCode);
+                }
+            }
+        }
+
+
+
+        private void btnBackToHome_Click(object sender, EventArgs e)
+        {
+            // Implement the logic to go back to the home screen
+        }
+
+        private void SetPlaceholderText(Control control, string placeholderText)
+        {
+            if (control is TextBox textBox)
+            {
+                if (string.IsNullOrWhiteSpace(textBox.Text))
+                {
+                    textBox.Text = placeholderText;
+                    textBox.ForeColor = Color.Gray; // Change color to indicate placeholder
+                }
+            }
+            else if (control is RichTextBox richTextBox)
+            {
+                if (string.IsNullOrWhiteSpace(richTextBox.Text))
+                {
+                    richTextBox.Text = placeholderText;
+                    richTextBox.ForeColor = Color.Gray; // Change color to indicate placeholder
+                }
+            }
+        }
+
+        private void ClearPlaceholderText(Control control, string placeholderText)
+        {
+            if (control is TextBox textBox)
+            {
+                if (textBox.Text == placeholderText)
+                {
+                    textBox.Text = string.Empty; // Clear the placeholder
+                    textBox.ForeColor = Color.Black; // Reset color
+                }
+            }
+            else if (control is RichTextBox richTextBox)
+            {
+                if (richTextBox.Text == placeholderText)
+                {
+                    richTextBox.Text = string.Empty; // Clear the placeholder
+                    richTextBox.ForeColor = Color.Black; // Reset color
+                }
+            }
+        }
+
+
+        private void listBoxSuggestions_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Check if an item is selected
+            if (listBoxSuggestions.SelectedItem != null)
+            {
+                // Set the text of txtLocation to the selected item's text
+                txtLocation.Text = listBoxSuggestions.SelectedItem.ToString();
+
+                // Optionally, clear the suggestions after selection
+                listBoxSuggestions.Items.Clear();
+            }
+        }
+
+        private void btnPreviewMedia_Click(object sender, EventArgs e)
+        {
+            // Check if there is attached media
+            if (attachedMedia.Count > 0)
+            {
+                // Get the first attached media file
+                MediaFile mediaFile = attachedMedia[0];
+
+                // Check the file extension to determine how to preview the media
+                string fileExtension = Path.GetExtension(mediaFile.FileName);
+
+                // Preview image files
+                if (fileExtension.ToLower() == ".jpg" || fileExtension.ToLower() == ".jpeg" || fileExtension.ToLower() == ".png")
+                {
+                    // Create a new PictureBox to display the image
+                    PictureBox pictureBox = new PictureBox();
+                    pictureBox.SizeMode = PictureBoxSizeMode.StretchImage;
+                    pictureBox.Image = Image.FromStream(new MemoryStream(mediaFile.Content));
+
+                    // Create a new Form to display the PictureBox
+                    Form previewForm = new Form();
+                    previewForm.Text = "Media Preview";
+                    previewForm.Controls.Add(pictureBox);
+                    pictureBox.Dock = DockStyle.Fill;
+
+                    // Show the preview form
+                    previewForm.ShowDialog();
+                }
+                // Preview video files
+                else if (fileExtension.ToLower() == ".mp4" || fileExtension.ToLower() == ".avi" || fileExtension.ToLower() == ".mov")
+                {
+                    // Create a new AxWindowsMediaPlayer to play the video
+                    AxWindowsMediaPlayer axWindowsMediaPlayer = new AxWindowsMediaPlayer();
+                    axWindowsMediaPlayer.CreateControl();
+                    axWindowsMediaPlayer.URL = Path.GetTempFileName() + fileExtension;
+                    File.WriteAllBytes(axWindowsMediaPlayer.URL, mediaFile.Content);
+
+                    // Create a new Form to display the AxWindowsMediaPlayer
+                    Form previewForm = new Form();
+                    previewForm.Text = "Media Preview";
+                    previewForm.Controls.Add(axWindowsMediaPlayer);
+                    axWindowsMediaPlayer.Dock = DockStyle.Fill;
+
+                    // Show the preview form
+                    previewForm.ShowDialog();
+                }
+                // Preview document files
+                else if (fileExtension.ToLower() == ".pdf" || fileExtension.ToLower() == ".doc" || fileExtension.ToLower() == ".docx")
+                {
+                    // Create a new WebBrowser to display the document
+                    WebBrowser webBrowser = new WebBrowser();
+                    webBrowser.Navigate(Path.GetTempFileName() + fileExtension);
+                    File.WriteAllBytes(webBrowser.Url.ToString(), mediaFile.Content);
+
+                    // Create a new Form to display the WebBrowser
+                    Form previewForm = new Form();
+                    previewForm.Text = "Media Preview";
+                    previewForm.Controls.Add(webBrowser);
+                    webBrowser.Dock = DockStyle.Fill;
+
+                    // Show the preview form
+                    previewForm.ShowDialog();
+                }
+                else
+                {
+                    MessageBox.Show("Unsupported file type.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("No media attached.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnLocalEvents_Click(object sender, EventArgs e)
+        {
+            this.Close();
+            LocalEvents localEvents = new LocalEvents();
+
+            localEvents.Show();
+        }
     }
 }

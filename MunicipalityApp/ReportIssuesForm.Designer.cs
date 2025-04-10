@@ -32,7 +32,6 @@ namespace MunicipalityApp
         /// </summary>
         private void InitializeComponent()
         {
-            this.txtLocation = new System.Windows.Forms.TextBox();
             this.cmbCategory = new System.Windows.Forms.ComboBox();
             this.rtbDescription = new System.Windows.Forms.RichTextBox();
             this.btnAttachMedia = new System.Windows.Forms.Button();
@@ -49,21 +48,13 @@ namespace MunicipalityApp
             this.progressBarReport = new System.Windows.Forms.ProgressBar();
             this.lblEngagementMessage = new System.Windows.Forms.Label();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.txtLocation = new System.Windows.Forms.TextBox();
+            this.listBoxSuggestions = new System.Windows.Forms.ListBox();
+            this.btnPreviewMedia = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.SuspendLayout();
-            // 
-            // txtLocation
-            // 
-            this.txtLocation.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtLocation.ForeColor = System.Drawing.Color.Black;
-            this.txtLocation.Location = new System.Drawing.Point(451, 99);
-            this.txtLocation.Multiline = true;
-            this.txtLocation.Name = "txtLocation";
-            this.txtLocation.Size = new System.Drawing.Size(167, 27);
-            this.txtLocation.TabIndex = 2;
             // 
             // cmbCategory
             // 
@@ -76,7 +67,7 @@ namespace MunicipalityApp
             "roads",
             "utilities",
             "other"});
-            this.cmbCategory.Location = new System.Drawing.Point(451, 148);
+            this.cmbCategory.Location = new System.Drawing.Point(451, 174);
             this.cmbCategory.Name = "cmbCategory";
             this.cmbCategory.Size = new System.Drawing.Size(167, 24);
             this.cmbCategory.TabIndex = 3;
@@ -86,7 +77,7 @@ namespace MunicipalityApp
             this.rtbDescription.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.rtbDescription.ForeColor = System.Drawing.Color.Black;
-            this.rtbDescription.Location = new System.Drawing.Point(451, 188);
+            this.rtbDescription.Location = new System.Drawing.Point(451, 218);
             this.rtbDescription.Name = "rtbDescription";
             this.rtbDescription.Size = new System.Drawing.Size(167, 96);
             this.rtbDescription.TabIndex = 4;
@@ -95,7 +86,7 @@ namespace MunicipalityApp
             // btnAttachMedia
             // 
             this.btnAttachMedia.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnAttachMedia.Location = new System.Drawing.Point(451, 325);
+            this.btnAttachMedia.Location = new System.Drawing.Point(451, 331);
             this.btnAttachMedia.Name = "btnAttachMedia";
             this.btnAttachMedia.Size = new System.Drawing.Size(167, 23);
             this.btnAttachMedia.TabIndex = 5;
@@ -117,18 +108,17 @@ namespace MunicipalityApp
             // btnLocalEvents
             // 
             this.btnLocalEvents.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnLocalEvents.Enabled = false;
             this.btnLocalEvents.Location = new System.Drawing.Point(3, 116);
             this.btnLocalEvents.Name = "btnLocalEvents";
             this.btnLocalEvents.Size = new System.Drawing.Size(138, 47);
             this.btnLocalEvents.TabIndex = 2;
             this.btnLocalEvents.Text = "Local Events & Announcements";
             this.btnLocalEvents.UseVisualStyleBackColor = true;
+            this.btnLocalEvents.Click += new System.EventHandler(this.btnLocalEvents_Click);
             // 
             // btnServiceRequestStatus
             // 
             this.btnServiceRequestStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnServiceRequestStatus.Enabled = false;
             this.btnServiceRequestStatus.Location = new System.Drawing.Point(3, 187);
             this.btnServiceRequestStatus.Name = "btnServiceRequestStatus";
             this.btnServiceRequestStatus.Size = new System.Drawing.Size(138, 47);
@@ -201,7 +191,7 @@ namespace MunicipalityApp
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label3.AutoSize = true;
             this.label3.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
-            this.label3.Location = new System.Drawing.Point(292, 148);
+            this.label3.Location = new System.Drawing.Point(292, 174);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(62, 16);
             this.label3.TabIndex = 9;
@@ -213,7 +203,7 @@ namespace MunicipalityApp
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label4.AutoSize = true;
             this.label4.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
-            this.label4.Location = new System.Drawing.Point(292, 188);
+            this.label4.Location = new System.Drawing.Point(292, 218);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(75, 16);
             this.label4.TabIndex = 10;
@@ -253,12 +243,50 @@ namespace MunicipalityApp
             this.pictureBox2.TabIndex = 13;
             this.pictureBox2.TabStop = false;
             // 
+            // txtLocation
+            // 
+            this.txtLocation.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtLocation.Location = new System.Drawing.Point(451, 92);
+            this.txtLocation.Name = "txtLocation";
+            this.txtLocation.Size = new System.Drawing.Size(167, 22);
+            this.txtLocation.TabIndex = 15;
+            // 
+            // listBoxSuggestions
+            // 
+            this.listBoxSuggestions.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.listBoxSuggestions.FormattingEnabled = true;
+            this.listBoxSuggestions.ItemHeight = 16;
+            this.listBoxSuggestions.Items.AddRange(new object[] {
+            "..."});
+            this.listBoxSuggestions.Location = new System.Drawing.Point(451, 114);
+            this.listBoxSuggestions.Name = "listBoxSuggestions";
+            this.listBoxSuggestions.Size = new System.Drawing.Size(167, 52);
+            this.listBoxSuggestions.TabIndex = 16;
+            this.listBoxSuggestions.Visible = false;
+            this.listBoxSuggestions.SelectedIndexChanged += new System.EventHandler(this.listBoxSuggestions_SelectedIndexChanged);
+            // 
+            // btnPreviewMedia
+            // 
+            this.btnPreviewMedia.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnPreviewMedia.Location = new System.Drawing.Point(451, 372);
+            this.btnPreviewMedia.Name = "btnPreviewMedia";
+            this.btnPreviewMedia.Size = new System.Drawing.Size(95, 23);
+            this.btnPreviewMedia.TabIndex = 17;
+            this.btnPreviewMedia.Text = "View Media";
+            this.btnPreviewMedia.UseVisualStyleBackColor = true;
+            this.btnPreviewMedia.Click += new System.EventHandler(this.btnPreviewMedia_Click);
+            // 
             // ReportIssuesForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.btnPreviewMedia);
+            this.Controls.Add(this.listBoxSuggestions);
+            this.Controls.Add(this.txtLocation);
             this.Controls.Add(this.lblEngagementMessage);
             this.Controls.Add(this.progressBarReport);
             this.Controls.Add(this.label4);
@@ -269,7 +297,6 @@ namespace MunicipalityApp
             this.Controls.Add(this.btnAttachMedia);
             this.Controls.Add(this.rtbDescription);
             this.Controls.Add(this.cmbCategory);
-            this.Controls.Add(this.txtLocation);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.pictureBox2);
             this.Name = "ReportIssuesForm";
@@ -283,8 +310,6 @@ namespace MunicipalityApp
         }
 
         #endregion
-
-        private System.Windows.Forms.TextBox txtLocation;
         private System.Windows.Forms.ComboBox cmbCategory;
         private System.Windows.Forms.RichTextBox rtbDescription;
         private System.Windows.Forms.Button btnAttachMedia;
@@ -301,5 +326,8 @@ namespace MunicipalityApp
         private System.Windows.Forms.ProgressBar progressBarReport;
         private System.Windows.Forms.Label lblEngagementMessage;
         private System.Windows.Forms.PictureBox pictureBox2;
+        private System.Windows.Forms.TextBox txtLocation;
+        private System.Windows.Forms.ListBox listBoxSuggestions;
+        private System.Windows.Forms.Button btnPreviewMedia;
     }
 }
